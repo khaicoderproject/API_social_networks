@@ -4,5 +4,5 @@ import { registerValidator } from '~/middlewares/user.middlewares'
 import { wrapRequestHandle } from '~/utils/errorHandling'
 import { validate } from '~/utils/validator'
 const router = Router()
-router.post('/register', validate(registerValidator), wrapRequestHandle(register))
+router.post('/register', registerValidator, wrapRequestHandle(register))
 export default router

@@ -2,7 +2,7 @@ import express from 'express'
 import { body, validationResult, ContextRunner, ValidationChain } from 'express-validator'
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema'
 import { HTTP_STATUS } from '~/constants/httpStatus'
-import { ErrorWithStatus } from '~/models/Errors'
+import { ErrorsEntity, ErrorWithStatus } from '~/models/Errors'
 
 // can be reused by many routes
 export const validate = (validations: RunnableValidationChains<ValidationChain>) => {
@@ -14,12 +14,16 @@ export const validate = (validations: RunnableValidationChains<ValidationChain>)
       return next()
     }
     const errorsObject = errors.mapped()
+    const entityObject = new ErrorsEntity({ errors: {} })
+    // console.log(entityObject)
     for (const key in errorsObject) {
       const { msg } = errorsObject[key]
       if (msg instanceof ErrorWithStatus && msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY) {
         return next(msg)
       }
+      entityObject.errors[key] = errorsObject[key]
+      // console.log(entityObject)
+      next(entityObject)
     }
-    res.status(422).json({ errors: errors.mapped() })
   }
 }
