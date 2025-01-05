@@ -24,6 +24,17 @@ class usersServices {
       }
     })
   }
+  private async accessAndRefreshToken(user_id: string) {
+    const [access_token, refresh_token] = await Promise.all([this.accessToken(user_id), this.refreshToken(user_id)])
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+  async login(user_id: string) {
+    const token = await this.accessAndRefreshToken(user_id)
+    return token
+  }
   async register(payload: registerReqBody) {
     const result = await DatabaseService.user.insertOne(
       new User({ ...payload, date_of_birth: new Date(payload.date_of_birth), password: hashPassword(payload.password) })
@@ -31,15 +42,8 @@ class usersServices {
     //new Date(payload.date_of_birth) giup doan code Date thay vi string
     //...payload, date_of_birth: new Date(payload.date_of_birth)})) ...payload dùng để ghi đè
     const user_id = result.insertedId.toString()
-    const [access_token, refresh_token] = await Promise.all([this.accessToken(user_id), this.refreshToken(user_id)])
-    return {
-      access_token,
-      refresh_token
-    }
-  }
-  async existPassword(email: string) {
-    const result = await DatabaseService.user.findOne({ email })
-    return result
+    const token = await this.accessAndRefreshToken(user_id)
+    return token
   }
 }
 const UsersServices = new usersServices()

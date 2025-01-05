@@ -1,8 +1,50 @@
 import { error } from 'console'
 import { checkSchema } from 'express-validator'
 import { ErrorWithStatus } from '~/models/Errors'
+import DatabaseService from '~/services/database.services'
 import UsersServices from '~/services/users.services'
 import { validate } from '~/utils/validator'
+
+export const loginValidator = validate(
+  checkSchema({
+    email: {
+      custom: {
+        options: async (value, { req }) => {
+          const check = await DatabaseService.user.findOne({ email: value })
+          req.user = check
+          if (!check) {
+            // throw new ErrorWithStatus({ message: 'Email đã tồn tại trong hệ thống', status: 401 })
+            throw new Error('Email không tồn tại trong hệ thống')
+          }
+          return true
+        }
+      },
+      isEmail: true,
+      notEmpty: true,
+      isString: true,
+      trim: true,
+      errorMessage: 'Vui lòng nhập đúng Email!'
+    },
+    password: {
+      // isStrongPassword:{
+      //   options:{
+
+      //   }
+      // }
+      isStrongPassword: true,
+      trim: true,
+      notEmpty: true,
+      isString: true,
+      isLength: {
+        options: {
+          min: 6,
+          max: 50
+        }
+      },
+      errorMessage: 'Mật khẩu không hợp lệ!'
+    }
+  })
+)
 
 export const registerValidator = validate(
   checkSchema({
@@ -19,7 +61,7 @@ export const registerValidator = validate(
     email: {
       custom: {
         options: async (value) => {
-          const check = await UsersServices.existPassword(value)
+          const check = await DatabaseService.user.findOne({ email: value })
           if (check) {
             // throw new ErrorWithStatus({ message: 'Email đã tồn tại trong hệ thống', status: 401 })
             throw new Error('Email đã tồn tại trong hệ thống')
