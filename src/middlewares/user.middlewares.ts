@@ -3,6 +3,7 @@ import { checkSchema } from 'express-validator'
 import { ErrorWithStatus } from '~/models/Errors'
 import DatabaseService from '~/services/database.services'
 import UsersServices from '~/services/users.services'
+import { hashPassword } from '~/utils/crypto'
 import { validate } from '~/utils/validator'
 
 export const loginValidator = validate(
@@ -10,12 +11,12 @@ export const loginValidator = validate(
     email: {
       custom: {
         options: async (value, { req }) => {
-          const check = await DatabaseService.user.findOne({ email: value })
-          req.user = check
+          const check = await DatabaseService.user.findOne({ email: value, password: hashPassword(req.body.password) })
           if (!check) {
             // throw new ErrorWithStatus({ message: 'Email đã tồn tại trong hệ thống', status: 401 })
             throw new Error('Email không tồn tại trong hệ thống')
           }
+          req.user = check
           return true
         }
       },
