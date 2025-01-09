@@ -29,3 +29,6 @@ export const register: any = async (
   //   next(error)
   // }
 }
+export const logout: any = (req: Request, res: Response) => {
+  return res.json('Logout success')
+}

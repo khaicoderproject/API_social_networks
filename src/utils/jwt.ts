@@ -20,3 +20,14 @@ export const signToken = ({
     })
   })
 }
+export const decodeJwt = (token: string) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.JWT_SECRET as string, function (err, decoded) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(decoded)
+      }
+    })
+  })
+}
